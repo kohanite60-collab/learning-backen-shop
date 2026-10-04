@@ -13,7 +13,7 @@ public class UserService {
     private UserMapper userMapper;
     public User getUserByName(String userName){
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username",userName);
+        queryWrapper.eq("name",userName);
         return userMapper.selectOne(queryWrapper);
 
     }
