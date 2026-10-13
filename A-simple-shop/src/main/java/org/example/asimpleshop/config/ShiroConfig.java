@@ -43,7 +43,11 @@ public class ShiroConfig {
         // 设置登出过滤器
         defaultShiroFilterChainDefinition.addPathDefinition("/user/logout","logout");
         defaultShiroFilterChainDefinition.addPathDefinition("/user/userRegister","anon");
+        defaultShiroFilterChainDefinition.addPathDefinition("/user/userLogout","logout");
         defaultShiroFilterChainDefinition.addPathDefinition("/error","anon");   // 这条别漏
+
+        // 待办模块：需要登录
+        defaultShiroFilterChainDefinition.addPathDefinition("/todo/**","authc");
 
         // 设置需要进行登录认证的拦截范围
         defaultShiroFilterChainDefinition.addPathDefinition("/**","authc");

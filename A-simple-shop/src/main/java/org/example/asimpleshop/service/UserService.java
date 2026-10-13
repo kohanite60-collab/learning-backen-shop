@@ -43,4 +43,41 @@ public class UserService {
         return true;
     }
 
+
+    // 按 id 查询用户（用于查看/修改信息）
+    public User getUserById(int id) {
+        return userMapper.selectById(id);
+    }
+
+
+    /**
+     * 修改用户信息
+     * @param id      用户 id
+     * @param name    新用户名（为空则不修改）
+     * @param rawPwd  新明文密码（为空则不修改密码）
+     * @return 是否修改成功
+     */
+    public boolean updateUser(int id, String name, String rawPwd) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return false;
+        }
+        // 1、改名（非空才改，且要查重）
+        if (name != null && !name.isEmpty()) {
+            User same = getUserByName(name);
+            if (same != null && same.getId() != id) {
+                return false;   // 用户名被其他人占用
+            }
+            user.setName(name);
+        }
+        // 2、改密码：重新生成随机盐 + 加盐哈希，盐和摘要必须成对更新
+        if (rawPwd != null && !rawPwd.isEmpty()) {
+            String salt = PasswordHelper.randomSalt();
+            user.setSalt(salt);
+            user.setPassword(PasswordHelper.encrypt(rawPwd, salt));
+        }
+        // 3、写回
+        return userMapper.updateById(user) > 0;
+    }
+
 }

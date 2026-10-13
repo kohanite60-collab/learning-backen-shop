@@ -8,6 +8,8 @@ import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.lang.util.ByteSource;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -37,12 +39,11 @@ public class MyRealm extends AuthorizingRealm {
         // 3 创建对象，封装当前登录用户的角色、权限信息
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("name", name);
-        User user = userMapper.selectOne(wrapper);
+
+        User user = userService.getUserByName(name);
 
 
-        info.addRole(user.getRole()); // 模拟查询角色名为yuqn
+        info.addRole(user.getRole());
 //        info.addStringPermission("user:add"); // 模拟该角色的权限有 user:add
         // 4 返回信息
         return info;
@@ -62,7 +63,7 @@ public class MyRealm extends AuthorizingRealm {
                     ByteSource.Util.bytes(user.getSalt()),
                     authenticationToken.getPrincipal().toString()
             );
-            System.out.println(info);
+
             return info;
         }
         return null;
