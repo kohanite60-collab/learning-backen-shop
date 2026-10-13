@@ -6,20 +6,23 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.example.asimpleshop.pojo.Result;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.example.asimpleshop.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
+
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/userLogin")
     @ResponseBody
     public Result userLogin(String name,String pwd){
 
-        System.out.println("====== 请求进来了 ======");
+
         // 1获取subject对象
         Subject subject = SecurityUtils.getSubject();
         // 2封装请求数据到token
@@ -35,6 +38,34 @@ public class UserController {
             return Result.error("登录失败");
         }
 }
+
+
+    @PostMapping("/userRegister")
+    @ResponseBody
+    public Result userRegister(String name,String pwd){
+
+        boolean ok= userService.register(name,pwd);
+        if (ok ){
+            return Result.success("注册成功");
+        }else{
+            return Result.error("注册失败");
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

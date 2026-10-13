@@ -42,6 +42,9 @@ public class ShiroConfig {
         defaultShiroFilterChainDefinition.addPathDefinition("/login.jsp","anon");
         // 设置登出过滤器
         defaultShiroFilterChainDefinition.addPathDefinition("/user/logout","logout");
+        defaultShiroFilterChainDefinition.addPathDefinition("/user/userRegister","anon");
+        defaultShiroFilterChainDefinition.addPathDefinition("/error","anon");   // 这条别漏
+
         // 设置需要进行登录认证的拦截范围
         defaultShiroFilterChainDefinition.addPathDefinition("/**","authc");
         return defaultShiroFilterChainDefinition;
