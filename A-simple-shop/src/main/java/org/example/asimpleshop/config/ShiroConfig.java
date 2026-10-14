@@ -46,6 +46,11 @@ public class ShiroConfig {
         defaultShiroFilterChainDefinition.addPathDefinition("/user/userLogout","logout");
         defaultShiroFilterChainDefinition.addPathDefinition("/error","anon");   // 这条别漏
 
+        // 放行静态资源（测试页）
+        defaultShiroFilterChainDefinition.addPathDefinition("/index.html","anon");
+        defaultShiroFilterChainDefinition.addPathDefinition("/static/**","anon");
+        defaultShiroFilterChainDefinition.addPathDefinition("/favicon.ico","anon");
+
         // 待办模块：需要登录
         defaultShiroFilterChainDefinition.addPathDefinition("/todo/**","authc");
 

@@ -1,6 +1,323 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>A-simple-shop 接口测试台</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 20px;
+    font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    background: #f5f6f8; color: #24292f;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  .sub { color: #6b7280; font-size: 13px; margin-bottom: 18px; }
+  .grid { display: grid; grid-template-columns: 400px 1fr; gap: 16px; align-items: start; }
+  .card {
+    background: #fff; border: 1px solid #e1e4e8; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .card h2 { font-size: 14px; margin: 0 0 10px; color: #57606a; font-weight: 600; }
+  label { display: block; font-size: 12px; color: #57606a; margin: 8px 0 3px; }
+  input, textarea {
+    width: 100%; padding: 7px 9px; font-size: 13px;
+    border: 1px solid #d0d7de; border-radius: 5px; font-family: inherit;
+    background: #fff; color: #24292f;
+  }
+  input:focus, textarea:focus { outline: none; border-color: #0969da; }
+  button {
+    padding: 7px 13px; font-size: 13px; border-radius: 5px; cursor: pointer;
+    border: 1px solid #d0d7de; background: #f6f8fa; color: #24292f; font-family: inherit;
+    margin-top: 9px; margin-right: 6px;
+  }
+  button:hover { background: #eef1f4; }
+  button.primary { background: #1f883d; border-color: #1f883d; color: #fff; }
+  button.primary:hover { background: #1a7f37; }
+  button.danger { background: #cf222e; border-color: #cf222e; color: #fff; }
+  button.danger:hover { background: #a40e26; }
+  button.mini { padding: 3px 8px; font-size: 12px; margin: 0 3px 0 0; }
+  .status {
+    display: inline-block; padding: 3px 9px; border-radius: 12px;
+    font-size: 12px; background: #eaeef2; color: #57606a;
+  }
+  .status.on { background: #dafbe1; color: #1a7f37; }
+  .status.off { background: #ffebe9; color: #cf222e; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #eaeef2; }
+  th { color: #57606a; font-weight: 600; font-size: 12px; background: #f6f8fa; }
+  .done { text-decoration: line-through; color: #8b949e; }
+  #log {
+    background: #0d1117; color: #c9d1d9; border-radius: 8px;
+    padding: 12px; font-family: Consolas, Monaco, monospace; font-size: 12px;
+    height: 340px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+    line-height: 1.55; margin: 0;
+  }
+  .log-ok { color: #7ee787; }
+  .log-err { color: #ff7b72; }
+  .log-req { color: #79c0ff; }
+  .empty { color: #8b949e; font-size: 13px; padding: 10px 0; text-align: center; }
+  .hint { font-size: 11px; color: #8b949e; margin-top: 4px; }
+</style>
+</head>
 <body>
-<h1>hello word!!!</h1>
-<p>this is a html page</p>
+<div class="wrap">
+  <h1>A-simple-shop 接口测试台</h1>
+  <div class="sub">精简版 · 登录 + 待办全套 · 所有响应原始 JSON 打印在右下日志区</div>
+
+  <div class="grid">
+    <!-- 左栏 -->
+    <div>
+      <div class="card">
+        <h2>① 登录 / 状态</h2>
+        <div>当前：<span id="userState" class="status off">未登录</span></div>
+        <label>用户名 name</label>
+        <input id="loginName" value="cyr">
+        <label>密码 pwd</label>
+        <input id="loginPwd" type="password" value="123456">
+        <button class="primary" onclick="doLogin()">登录</button>
+        <button onclick="doLogout()">退出登录</button>
+        <div class="hint">登录接口是 GET，参数走 URL</div>
+      </div>
+
+      <div class="card">
+        <h2>② 新建待办</h2>
+        <label>标题 title（≤50 字符）</label>
+        <input id="addTitle" placeholder="例如：买菜">
+        <label>内容 content</label>
+        <textarea id="addContent" rows="3" placeholder="例如：西红柿、鸡蛋"></textarea>
+        <button class="primary" onclick="doAdd()">创建</button>
+      </div>
+
+      <div class="card">
+        <h2>③ 按 id 操作</h2>
+        <label>id</label>
+        <input id="opId" placeholder="在右侧列表点选会自动填入">
+        <label>新标题（修改用）</label>
+        <input id="opTitle" placeholder="留空则不改">
+        <label>新内容（修改用）</label>
+        <textarea id="opContent" rows="2" placeholder="留空则不改"></textarea>
+        <div>
+          <button onclick="doDetail()">查详情</button>
+          <button onclick="doUpdate()">修改</button>
+          <button onclick="doToggle()">切换完成状态</button>
+          <button class="danger" onclick="doDelete()">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右栏 -->
+    <div>
+      <div class="card">
+        <h2>待办列表 <button class="mini" onclick="doList()">刷新</button></h2>
+        <div id="listBox"><div class="empty">登录后点「刷新」加载</div></div>
+      </div>
+      <div class="card">
+        <h2>请求日志 <button class="mini" onclick="document.getElementById('log').innerHTML=''">清空</button></h2>
+        <pre id="log"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ 日志 ============
+var logBox = document.getElementById('log');
+function log(msg, cls) {
+  var t = new Date().toLocaleTimeString('zh-CN', {hour12: false});
+  var line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = '[' + t + '] ' + msg;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+function logJson(label, obj) {
+  log(label, 'log-ok');
+  log(JSON.stringify(obj, null, 2), 'log-ok');
+}
+
+// ============ 统一请求 ============
+// 关键：credentials='same-origin' 自动携带 JSESSIONID，Shiro 靠它识别登录态
+function request(method, url, params, onOk, onFail) {
+  log('→ ' + method + ' ' + url + (params ? '  body=' + params : ''), 'log-req');
+
+  var opt = { method: method, credentials: 'same-origin' };
+  if (params) {
+    opt.headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' };
+    opt.body = params;
+  }
+
+  fetch(url, opt)
+    .then(function (resp) {
+      var http = resp.status;
+      return resp.text().then(function (text) {
+        var data;
+        try { data = JSON.parse(text); }
+        catch (e) { data = text; }
+
+        if (http >= 200 && http < 300) {
+          logJson('← HTTP ' + http, data);
+          if (onOk) onOk(data);
+        } else {
+          log('← HTTP ' + http + '（非 2xx）', 'log-err');
+          log(JSON.stringify(data, null, 2), 'log-err');
+          if (onFail) onFail(data);
+        }
+      });
+    })
+    .catch(function (err) {
+      log('✗ 请求失败：' + err, 'log-err');
+      log('（若提示 load failed，多为服务未启动，或未登录被 authc 重定向）', 'log-err');
+    });
+}
+
+// 表单参数拼装（自动 URL 编码）
+function form(obj) {
+  var parts = [];
+  for (var k in obj) {
+    if (obj[k] !== undefined && obj[k] !== null) {
+      parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]));
+    }
+  }
+  return parts.join('&');
+}
+
+var val = function (id) { return document.getElementById(id).value; };
+var setVal = function (id, v) { document.getElementById(id).value = v; };
+
+function setUserState(logged, name) {
+  var el = document.getElementById('userState');
+  if (logged) {
+    el.textContent = '已登录：' + name;
+    el.className = 'status on';
+  } else {
+    el.textContent = '未登录';
+    el.className = 'status off';
+  }
+}
+
+// ============ 登录 / 退出 ============
+var loggedName = '';
+
+function doLogin() {
+  var name = val('loginName'), pwd = val('loginPwd');
+  if (!name || !pwd) { log('用户名或密码为空', 'log-err'); return; }
+  // 登录接口是 GET，参数在 URL
+  request('GET', '/user/userLogin?name=' + encodeURIComponent(name) + '&pwd=' + encodeURIComponent(pwd),
+    null,
+    function (data) {
+      if (data && data.code === 200) {
+        loggedName = name;
+        setUserState(true, name);
+        doList();   // 登录成功顺手拉列表
+      } else {
+        setUserState(false, '');
+      }
+    });
+}
+
+function doLogout() {
+  request('GET', '/user/userLogout', null, function () {
+    loggedName = '';
+    setUserState(false, '');
+    document.getElementById('listBox').innerHTML = '<div class="empty">已退出登录</div>';
+  });
+}
+
+// ============ 待办 ============
+function doAdd() {
+  var title = val('addTitle'), content = val('addContent');
+  if (!title) { log('标题不能为空', 'log-err'); return; }
+  request('POST', '/todo/add', form({ title: title, content: content }), function (data) {
+    if (data && data.code === 200) {
+      setVal('addTitle', ''); setVal('addContent', '');
+      doList();
+    }
+  });
+}
+
+function doList() {
+  request('GET', '/todo/list', null, function (data) {
+    renderList(data && data.data ? data.data : []);
+  });
+}
+
+function doDetail() {
+  var id = val('opId');
+  if (!id) { log('请先填 id', 'log-err'); return; }
+  request('GET', '/todo/detail?id=' + encodeURIComponent(id), null);
+}
+
+function doUpdate() {
+  var id = val('opId');
+  if (!id) { log('请先填 id', 'log-err'); return; }
+  request('POST', '/todo/update', form({ id: id, title: val('opTitle'), content: val('opContent') }),
+    function (data) { if (data && data.code === 200) doList(); });
+}
+
+function doToggle() {
+  var id = val('opId');
+  if (!id) { log('请先填 id', 'log-err'); return; }
+  request('POST', '/todo/toggle', form({ id: id }),
+    function (data) { if (data && data.code === 200) doList(); });
+}
+
+function doDelete() {
+  var id = val('opId');
+  if (!id) { log('请先填 id', 'log-err'); return; }
+  if (!confirm('确认删除 id=' + id + ' 的待办？')) return;
+  request('POST', '/todo/delete', form({ id: id }),
+    function (data) { if (data && data.code === 200) doList(); });
+}
+
+function pick(id, title, content) {
+  setVal('opId', id);
+  setVal('opTitle', title);
+  setVal('opContent', content);
+  log('已选中 id=' + id, 'log-req');
+}
+
+function renderList(items) {
+  var box = document.getElementById('listBox');
+  if (!items || items.length === 0) {
+    box.innerHTML = '<div class="empty">暂无待办（或未登录）</div>';
+    return;
+  }
+  var html = '<table><thead><tr><th>id</th><th>标题</th><th>内容</th><th>状态</th><th>操作</th></tr></thead><tbody>';
+  items.forEach(function (it) {
+    var doneCls = it.status === 1 ? 'done' : '';
+    var statusTxt = it.status === 1 ? '已完成' : '未完成';
+    var esc = function (s) { return (s == null ? '' : String(s)).replace(/[<>&"]/g,
+      function (c) { return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); };
+    html += '<tr>'
+      + '<td>' + it.id + '</td>'
+      + '<td class="' + doneCls + '">' + esc(it.title) + '</td>'
+      + '<td class="' + doneCls + '">' + esc(it.content) + '</td>'
+      + '<td>' + statusTxt + '</td>'
+      + '<td>'
+      + '<button class="mini" onclick="pick(' + it.id + ',\'' + esc(it.title).replace(/'/g, "\\'") + '\',\'' + esc(it.content).replace(/'/g, "\\'") + '\')">选中</button>'
+      + '<button class="mini" onclick="quickToggle(' + it.id + ')">切换</button>'
+      + '<button class="mini danger" onclick="quickDelete(' + it.id + ')">删除</button>'
+      + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  box.innerHTML = html;
+}
+
+function quickToggle(id) {
+  request('POST', '/todo/toggle', form({ id: id }),
+    function (data) { if (data && data.code === 200) doList(); });
+}
+
+function quickDelete(id) {
+  if (!confirm('确认删除 id=' + id + '？')) return;
+  request('POST', '/todo/delete', form({ id: id }),
+    function (data) { if (data && data.code === 200) doList(); });
+}
+
+// ============ 启动 ============
+log('测试台就绪。先点「登录」，再操作待办。');
+log('提示：所有接口都在同源 http://localhost:8080 下，cookie 自动携带。');
+</script>
 </body>
 </html>
